@@ -20,9 +20,11 @@ namespace MiProyectoApi.Controllers
     public class MainController : ControllerBase
     {
         private readonly ILogger<MainController> _logger;
-        public MainController(ILogger<MainController> logger)
+        private readonly AppDbContext _db; // PARA usar el APPDbContext con la Api Rest
+        public MainController(ILogger<MainController> logger, AppDbContext db)
         {
             _logger = logger;
+            _db = db;
         }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -30,7 +32,7 @@ namespace MiProyectoApi.Controllers
         public ActionResult<IEnumerable<CustomerDto>> GetCustomer()
         {
             _logger.LogInformation("Obtener lista de clientes");
-            return Ok(CustomerStore.CustomerList);
+            return Ok(_db.Customers.ToList());
            
         }
 
@@ -45,7 +47,8 @@ namespace MiProyectoApi.Controllers
                 _logger.LogError("Error al traer el cliente con Id " + id);
                 return BadRequest();
             }
-            var customer = CustomerStore.CustomerList.FirstOrDefault(c=>c.Id == id);
+            // var customer = CustomerStore.CustomerList.FirstOrDefault(c=>c.Id == id);
+            var customer = _db.Customers.FirstOrDefault(c=> c.Id == id);
 
             if(customer == null)
             {
@@ -74,8 +77,20 @@ namespace MiProyectoApi.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError);
             }
 
-            customerDto.Id=CustomerStore.CustomerList.OrderByDescending(c=>c.Id).FirstOrDefault().Id + 1;
-            CustomerStore.CustomerList.Add(customerDto);
+            // customerDto.Id=CustomerStore.CustomerList.OrderByDescending(c=>c.Id).FirstOrDefault().Id + 1;
+            // CustomerStore.CustomerList.Add(customerDto);
+
+            Customer modelo = new()
+            {
+                Name = customerDto.Name,
+                Surname = customerDto.Surname,
+                Photo = customerDto.Photo,
+                CreatedBy = customerDto.CreatedBy,
+                Date = DateTime.Now,
+            };
+
+            _db.Customers.Add(modelo);
+            _db.SaveChanges();
 
             return CreatedAtRoute("GetCustomer", new{id=customerDto.Id}, customerDto);
         }
@@ -91,12 +106,13 @@ namespace MiProyectoApi.Controllers
             {
                 return BadRequest();
             }
-            var customer = CustomerStore.CustomerList.FirstOrDefault(c=>c.Id == id);
+            var customer =_db.Customers.FirstOrDefault(c=>c.Id == id);
             if(customer == null)
             {
                 return NotFound();
             }
-            CustomerStore.CustomerList.Remove(customer);
+            _db.Customers.Remove(customer);
+            _db.SaveChanges();
             return NoContent();
         }
 
@@ -110,11 +126,21 @@ namespace MiProyectoApi.Controllers
             {
                 return BadRequest();
             }
-            var customer = CustomerStore.CustomerList.FirstOrDefault(c=>c.Id == id);
-            customer.Name = customerDto.Name;
-            customer.Surname = customerDto.Surname;
-            customer.Photo = customerDto.Photo;
-            customer.CreatedBy = customerDto.CreatedBy;
+
+            Customer modelo = new()
+            {
+                Id = customerDto.Id,
+                Name = customerDto.Name,
+                Surname = customerDto.Surname,
+                Photo = customerDto.Photo,
+                CreatedBy = customerDto.CreatedBy,
+                Date = DateTime.Now,
+    
+            };
+
+            _db.Customers.Update(modelo);
+            _db.SaveChanges();
+
 
         return NoContent();
         }
