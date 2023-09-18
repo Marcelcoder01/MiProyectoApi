@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using MiProyectoApi.Models;
 using MiProyectoApi.Models.Dto;
 using MiProyectoApi.Datos;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace MiProyectoApi.Controllers
@@ -29,10 +30,10 @@ namespace MiProyectoApi.Controllers
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
 
-        public ActionResult<IEnumerable<CustomerDto>> GetCustomer()
+        public async Task<ActionResult<IEnumerable<CustomerDto>>> GetCustomer()
         {
             _logger.LogInformation("Obtener lista de clientes");
-            return Ok(_db.Customers.ToList());
+            return Ok(await _db.Customers.ToListAsync());
            
         }
 
@@ -40,7 +41,7 @@ namespace MiProyectoApi.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<CustomerDto> GetCustomer(int id)
+        public async Task<ActionResult<CustomerDto>> GetCustomer(int id)
         {
             if(id==0)
             {
@@ -48,7 +49,7 @@ namespace MiProyectoApi.Controllers
                 return BadRequest();
             }
             // var customer = CustomerStore.CustomerList.FirstOrDefault(c=>c.Id == id);
-            var customer = _db.Customers.FirstOrDefault(c=> c.Id == id);
+            var customer = await _db.Customers.FirstOrDefaultAsync(c=> c.Id == id);
 
             if(customer == null)
             {
@@ -61,7 +62,7 @@ namespace MiProyectoApi.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult<CustomerDto> AddCustomer([FromBody] CustomerDto customerDto)
+        public async Task<ActionResult<CustomerDto>> AddCustomer([FromBody] CustomerCreateDto customerDto)
         {
             if(!ModelState.IsValid)
             {
@@ -72,11 +73,7 @@ namespace MiProyectoApi.Controllers
             {
                 return BadRequest(customerDto);
             }
-            if(customerDto.Id > 0)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError);
-            }
-
+   
             // customerDto.Id=CustomerStore.CustomerList.OrderByDescending(c=>c.Id).FirstOrDefault().Id + 1;
             // CustomerStore.CustomerList.Add(customerDto);
 
@@ -89,10 +86,10 @@ namespace MiProyectoApi.Controllers
                 Date = DateTime.Now,
             };
 
-            _db.Customers.Add(modelo);
-            _db.SaveChanges();
+            await _db.Customers.AddAsync(modelo);
+            await _db.SaveChangesAsync();
 
-            return CreatedAtRoute("GetCustomer", new{id=customerDto.Id}, customerDto);
+            return CreatedAtRoute("GetCustomer", new{id=modelo.Id}, modelo);
         }
 
         [HttpDelete("{id:int}")]
@@ -100,19 +97,19 @@ namespace MiProyectoApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-        public IActionResult DeleteCustomer(int id)
+        public async Task<IActionResult> DeleteCustomer(int id)
         {
             if(id==0)
             {
                 return BadRequest();
             }
-            var customer =_db.Customers.FirstOrDefault(c=>c.Id == id);
+            var customer = await _db.Customers.FirstOrDefaultAsync(c=>c.Id == id);
             if(customer == null)
             {
                 return NotFound();
             }
             _db.Customers.Remove(customer);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
             return NoContent();
         }
 
@@ -120,7 +117,7 @@ namespace MiProyectoApi.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
 
-        public IActionResult UpdateCustomer(int id, [FromBody] CustomerDto customerDto)
+        public async Task<IActionResult> UpdateCustomer(int id, [FromBody] CustomerUpdateDto customerDto)
         {
             if(customerDto == null || id != customerDto.Id)
             {
@@ -139,7 +136,7 @@ namespace MiProyectoApi.Controllers
             };
 
             _db.Customers.Update(modelo);
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
 
 
         return NoContent();
