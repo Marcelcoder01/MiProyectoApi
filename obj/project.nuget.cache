@@ -1,12 +1,13 @@
 {
   "version": 2,
-  "dgSpecHash": "jFq72Ih5E6i9MW7pfUS/3V3aTR2AZSes9Vhj6SSY50DUZyqUN6PwiaYJFHGbMMmr1s1vcr/Prl1+uV0nKvBiRQ==",
+  "dgSpecHash": "DDiMwI4j1oA4UzhvVx5SkX5r60R2JEpIuJqNPMM/sYdAQayoU1J6ClbXSkiStSOw2Adr5hx81SwV3I6rJScAWQ==",
   "success": true,
   "projectFilePath": "C:\\Users\\MARCE\\Desktop\\REPOS\\NET6test\\MiProyectoApi\\MiProyectoApi.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\MARCE\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\MARCE\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",
     "C:\\Users\\MARCE\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
+    "C:\\Users\\MARCE\\.nuget\\packages\\microsoft.aspnetcore.authentication.jwtbearer\\7.0.11\\microsoft.aspnetcore.authentication.jwtbearer.7.0.11.nupkg.sha512",
     "C:\\Users\\MARCE\\.nuget\\packages\\microsoft.aspnetcore.openapi\\7.0.11\\microsoft.aspnetcore.openapi.7.0.11.nupkg.sha512",
     "C:\\Users\\MARCE\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\1.1.1\\microsoft.bcl.asyncinterfaces.1.1.1.nupkg.sha512",
     "C:\\Users\\MARCE\\.nuget\\packages\\microsoft.csharp\\4.5.0\\microsoft.csharp.4.5.0.nupkg.sha512",

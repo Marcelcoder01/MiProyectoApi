@@ -12,21 +12,77 @@ using MiProyectoApi.Models;
 using MiProyectoApi.Models.Dto;
 using MiProyectoApi.Datos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+
+
 
 
 namespace MiProyectoApi.Controllers
 {
+    
     [ApiController]
     [Route("api/[controller]")]
     public class MainController : ControllerBase
     {
+
         private readonly ILogger<MainController> _logger;
-        private readonly AppDbContext _db; // PARA usar el APPDbContext con la Api Rest
+        private readonly AppDbContext _db; 
         public MainController(ILogger<MainController> logger, AppDbContext db)
         {
             _logger = logger;
             _db = db;
         }
+
+        
+[HttpPost("login")] // Ruta para la autenticación POST
+    public IActionResult Login([FromBody] LoginRequestDto requestDto)
+    {
+        Console.WriteLine("Solicitud Recibida por la API");
+        if (requestDto == null || string.IsNullOrEmpty(requestDto.Username) || string.IsNullOrEmpty(requestDto.Password))
+        {
+            return BadRequest("Credenciales inválidas");
+        }
+
+        // Aquí debes implementar la lógica de autenticación.
+        // Verifica las credenciales del usuario y autentica si son válidas.
+        if (EsCredencialValida(requestDto.Username, requestDto.Password))
+        {
+            // Si la autenticación es exitosa, crea un objeto ClaimsIdentity con información del usuario.
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, requestDto.Username),
+                // Puedes agregar otras reclamaciones personalizadas aquí
+            };
+
+            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+
+            // Crea un objeto ClaimsPrincipal con el ClaimsIdentity.
+            var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+            // Inicia sesión al usuario utilizando el middleware de autenticación de cookies.
+            HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+
+            // Redirige al usuario a la página de inicio o a donde desees.
+            return Ok("Autenticación exitosa");
+            
+
+        }
+        else
+        {
+            // La autenticación falló
+            return BadRequest("Credenciales inválidas");
+        }
+    }
+
+    private bool EsCredencialValida(string username, string password)
+    {
+        // Verifica si el nombre de usuario y la contraseña son correctos
+        return (username == "Admin" && password == "codificacion1");
+    }
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
 
@@ -36,7 +92,6 @@ namespace MiProyectoApi.Controllers
             return Ok(await _db.Customers.ToListAsync());
            
         }
-
         [HttpGet("{id:int}", Name = "GetCustomer")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -74,8 +129,7 @@ namespace MiProyectoApi.Controllers
                 return BadRequest(customerDto);
             }
    
-            // customerDto.Id=CustomerStore.CustomerList.OrderByDescending(c=>c.Id).FirstOrDefault().Id + 1;
-            // CustomerStore.CustomerList.Add(customerDto);
+         
 
             Customer modelo = new()
             {
@@ -89,8 +143,10 @@ namespace MiProyectoApi.Controllers
             await _db.Customers.AddAsync(modelo);
             await _db.SaveChangesAsync();
 
-            return CreatedAtRoute("GetCustomer", new{id=modelo.Id}, modelo);
+            return RedirectToAction("Index");
         }
+
+  
 
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
